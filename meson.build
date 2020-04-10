@@ -69,6 +69,6 @@ ads_lib = shared_library('ads',
 
 ads_dep = declare_dependency(
   link_with : ads_lib,
-  include_directories : include_directories('.', is_system : true),
+  include_directories : include_directories('.', 'src', is_system : true),
 )
 
