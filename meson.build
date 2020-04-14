@@ -61,6 +61,7 @@ processed2 = custom_target('custom_moc',
 defs = ['-DADS_SHARED_EXPORT', '-DQT_NO_DEBUG_OUTPUT']
 
 ads_lib = shared_library('ads',
+  name_prefix: 'lib',
   sources : src + processed + [processed2],
   cpp_args: defs,
   include_directories : include_directories('src'),
