@@ -27,7 +27,7 @@
 //============================================================================
 //                                   INCLUDES
 //============================================================================
-#include <FloatingDragPreview.h>
+#include "FloatingDragPreview.h"
 #include "DockAreaTabBar.h"
 
 #include <QMouseEvent>
@@ -138,6 +138,8 @@ CDockAreaTabBar::CDockAreaTabBar(CDockAreaWidget* parent) :
 	d->TabsLayout->addStretch(1);
 	d->TabsContainerWidget->setLayout(d->TabsLayout);
 	setWidget(d->TabsContainerWidget);
+
+    setFocusPolicy(Qt::NoFocus);
 }
 
 
@@ -205,10 +207,14 @@ void CDockAreaTabBar::insertTab(int Index, CDockWidgetTab* Tab)
 	connect(Tab, SIGNAL(elidedChanged(bool)), this, SIGNAL(elidedChanged(bool)));
 	Tab->installEventFilter(this);
 	emit tabInserted(Index);
-	if (Index <= d->CurrentIndex || d->CurrentIndex == -1)
+    if (Index <= d->CurrentIndex)
 	{
 		setCurrentIndex(d->CurrentIndex + 1);
-	}
+    }
+    else if (d->CurrentIndex == -1)
+    {
+    	setCurrentIndex(Index);
+    }
 
 	updateGeometry();
 }
@@ -451,6 +457,11 @@ bool CDockAreaTabBar::eventFilter(QObject *watched, QEvent *event)
 		 emit tabOpened(d->TabsLayout->indexOf(Tab));
 		 updateGeometry();
 		 break;
+
+    // Setting the text of a tab will cause a LayoutRequest event
+    case QEvent::LayoutRequest:
+         updateGeometry();
+         break;
 
 	default:
 		break;

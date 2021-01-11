@@ -44,6 +44,7 @@
 #include <QDebug>
 #include <QToolBar>
 #include <QXmlStreamWriter>
+#include <QWindow>
 
 #include <QGuiApplication>
 #include <QScreen>
@@ -133,6 +134,7 @@ void DockWidgetPrivate::showDockWidget()
 	{
 		CFloatingDockContainer* FloatingWidget = new CFloatingDockContainer(_this);
 		FloatingWidget->resize(_this->size());
+		TabWidget->show();
 		FloatingWidget->show();
 	}
 	else
@@ -234,6 +236,11 @@ CDockWidget::CDockWidget(const QString &title, QWidget *parent) :
 	connect(d->ToggleViewAction, SIGNAL(triggered(bool)), this,
 		SLOT(toggleView(bool)));
 	setToolbarFloatingStyle(false);
+
+	if (CDockManager::testConfigFlag(CDockManager::FocusHighlighting))
+	{
+		setFocusPolicy(Qt::ClickFocus);
+	}
 }
 
 //============================================================================
@@ -262,7 +269,7 @@ void CDockWidget::setWidget(QWidget* widget, eInsertMode InsertMode)
 		takeWidget();
 	}
 
-	QScrollArea* ScrollAreaWidget = qobject_cast<QScrollArea*>(widget);
+	auto ScrollAreaWidget = qobject_cast<QAbstractScrollArea*>(widget);
 	if (ScrollAreaWidget || ForceNoScrollArea == InsertMode)
 	{
 		d->Layout->addWidget(widget);
@@ -292,6 +299,7 @@ QWidget* CDockWidget::takeWidget()
 		w = d->ScrollArea->takeWidget();
 		delete d->ScrollArea;
 		d->ScrollArea = nullptr;
+		d->Widget = nullptr;
 	}
 	else if (d->Widget)
 	{
@@ -332,6 +340,8 @@ void CDockWidget::setFeatures(DockWidgetFeatures features)
 	d->Features = features;
 	emit featuresChanged(d->Features);
 	d->TabWidget->onDockWidgetFeaturesChanged();
+	if(CDockAreaWidget* DockArea = dockAreaWidget())
+		DockArea->onDockWidgetFeaturesChanged();
 }
 
 
@@ -454,6 +464,13 @@ void CDockWidget::setMinimumSizeHintMode(eMinimumSizeHintMode Mode)
 
 
 //============================================================================
+bool CDockWidget::isCentralWidget() const
+{
+    return dockManager()->centralWidget() == this;
+}
+
+
+//============================================================================
 void CDockWidget::toggleView(bool Open)
 {
 	// If the toggle view action mode is ActionModeShow, then Open is always
@@ -532,6 +549,7 @@ void CDockWidget::setDockArea(CDockAreaWidget* DockArea)
 {
 	d->DockArea = DockArea;
 	d->ToggleViewAction->setChecked(DockArea != nullptr && !this->isClosed());
+	setParent(DockArea);
 }
 
 
@@ -914,6 +932,49 @@ bool CDockWidget::isFullScreen() const
 	else
 	{
 		return Super::isFullScreen();
+	}
+}
+
+
+//============================================================================
+void CDockWidget::setAsCurrentTab()
+{
+	if (d->DockArea && !isClosed())
+	{
+		d->DockArea->setCurrentDockWidget(this);
+	}
+}
+
+
+//============================================================================
+bool CDockWidget::isTabbed() const
+{
+	return d->DockArea && (d->DockArea->openDockWidgetsCount() > 1);
+}
+
+
+
+//============================================================================
+bool CDockWidget::isCurrentTab() const
+{
+	return d->DockArea && (d->DockArea->currentDockWidget() == this);
+}
+
+
+//============================================================================
+void CDockWidget::raise()
+{
+	if (isClosed())
+	{
+		return;
+	}
+
+	setAsCurrentTab();
+	if (isInFloatingContainer())
+	{
+		auto FloatingWindow = window();
+		FloatingWindow->raise();
+		FloatingWindow->activateWindow();
 	}
 }
 
