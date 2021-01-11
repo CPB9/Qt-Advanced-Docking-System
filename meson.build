@@ -20,6 +20,8 @@ moc_headers = [
 	'src/FloatingDragPreview.h',
 	'src/IconProvider.h',
 	'src/DockComponentsFactory.h',
+    'src/DockFocusController.h',
+    'src/DockAreaTitleBar_p.h'
 ]
 
 src = [
@@ -39,6 +41,7 @@ src = [
 	'src/FloatingDragPreview.cpp',
 	'src/IconProvider.cpp',
 	'src/DockComponentsFactory.cpp',
+    'src/DockFocusController.cpp',
 #    'src/linux/FloatingWidgetTitleBar.cpp',
 ]
 
