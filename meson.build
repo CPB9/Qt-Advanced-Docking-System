@@ -48,6 +48,7 @@ if target_machine.system() == 'linux'
     extra_deps += dependency('qt5', modules: ['X11Extras'])
     extra_deps += dependency('xcb')
     src += 'src/linux/FloatingWidgetTitleBar.cpp'
+    moc_headers += 'src/linux/FloatingWidgetTitleBar.h' 
 endif
 
 rc_files = 'src/ads.qrc'
