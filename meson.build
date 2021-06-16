@@ -42,9 +42,13 @@ src = [
 	'src/IconProvider.cpp',
 	'src/DockComponentsFactory.cpp',
     'src/DockFocusController.cpp',
-#    'src/linux/FloatingWidgetTitleBar.cpp',
 ]
 
+if target_machine.system() == 'linux'
+    extra_deps += dependency('qt5', modules: ['X11Extras'])
+    extra_deps += dependency('xcb')
+    src += 'src/linux/FloatingWidgetTitleBar.cpp'
+endif
 
 rc_files = 'src/ads.qrc'
 
@@ -68,7 +72,7 @@ ads_lib = shared_library('ads',
   sources : src + processed + [processed2],
   cpp_args: defs,
   include_directories : include_directories('src'),
-  dependencies : qt5_dep,
+  dependencies : [qt5_dep] + extra_deps,
 )
 
 ads_dep = declare_dependency(
