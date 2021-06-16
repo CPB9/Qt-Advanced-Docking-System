@@ -44,6 +44,7 @@ src = [
     'src/DockFocusController.cpp',
 ]
 
+extra_deps = []
 if target_machine.system() == 'linux'
     extra_deps += dependency('qt5', modules: ['X11Extras'])
     extra_deps += dependency('xcb')
